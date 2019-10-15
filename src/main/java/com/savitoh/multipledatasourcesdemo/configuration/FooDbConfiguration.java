@@ -1,8 +1,6 @@
 package com.savitoh.multipledatasourcesdemo.configuration;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbcp.BasicDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,23 +33,22 @@ public class FooDbConfiguration {
     @Primary
     @Bean(name = "fooDataSource")
     @ConfigurationProperties(prefix = "foo.datasource.configuration")
-    public DataSource dataSource() {
+    public HikariDataSource  dataSource() {
         return dataSourceProperties().initializeDataSourceBuilder()
-                                     .type(BasicDataSource.class).build();
+                                     .type(HikariDataSource.class)
+                                     .build();
     }
 
     @Primary
     @Bean(name = "fooEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
-    entityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("fooDataSource") DataSource dataSource
-    ) {
-        return builder
-                .dataSource(dataSource)
-                .packages("com.savitoh.multipledatasourcesdemo.cartorio.model")
-                .persistenceUnit("foo")
-                .build();
+    entityManagerFactory(EntityManagerFactoryBuilder builder,
+                         @Qualifier("fooDataSource") 
+                         HikariDataSource dataSource) {
+        return builder.dataSource(dataSource)
+                      .packages("com.savitoh.multipledatasourcesdemo.cartorio.model")
+                      .persistenceUnit("foo")
+                      .build();
     }
 
     @Primary

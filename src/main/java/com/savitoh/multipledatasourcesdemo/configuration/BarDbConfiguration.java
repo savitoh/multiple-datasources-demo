@@ -1,9 +1,6 @@
 package com.savitoh.multipledatasourcesdemo.configuration;
 
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
-
-import org.apache.commons.dbcp.BasicDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -17,6 +14,8 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.persistence.EntityManagerFactory;
 
 @Configuration
 @Profile({"dev", "test"})
@@ -35,33 +34,28 @@ public class BarDbConfiguration {
 
     @Bean(name = "barDataSource")
     @ConfigurationProperties(prefix = "bar.datasource.configuration")
-    public DataSource dataSource(@Autowired
-                                 @Qualifier("barDataSourceProperties")
-                                 DataSourceProperties dataSourceProperties) {
-        /*return DataSourceBuilder.create().build();*/
+    public HikariDataSource  dataSource(@Autowired
+                                        @Qualifier("barDataSourceProperties")
+                                        DataSourceProperties dataSourceProperties) {
         return dataSourceProperties.initializeDataSourceBuilder()
-                                   .type(BasicDataSource.class).build();
+                                   .type(HikariDataSource.class)
+                                   .build();
     }
 
     @Bean(name = "barEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
-    barEntityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("barDataSource") DataSource dataSource
-    ) {
-        return
-                builder
-                    .dataSource(dataSource)
-                    .packages("com.savitoh.multipledatasourcesdemo.unidadejudicial.model")
-                    .persistenceUnit("bar")
-                    .build();
+    barEntityManagerFactory(EntityManagerFactoryBuilder builder,
+                            @Qualifier("barDataSource") HikariDataSource dataSource) {
+        return builder.dataSource(dataSource)
+                      .packages("com.savitoh.multipledatasourcesdemo.unidadejudicial.model")
+                      .persistenceUnit("bar")
+                      .build();
     }
 
     @Bean(name = "barTransactionManager")
     public PlatformTransactionManager barTransactionManager (
             @Qualifier("barEntityManagerFactory") EntityManagerFactory
-                    barEntityManagerFactory
-    ) {
+            barEntityManagerFactory) {
         return new JpaTransactionManager(barEntityManagerFactory);
     }
 }

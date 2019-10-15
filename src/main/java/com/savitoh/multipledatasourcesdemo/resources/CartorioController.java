@@ -18,8 +18,6 @@ public class CartorioController {
 
     @GetMapping
     public String getCartorio() {
-        this.cartorioRepository.count();
-        this.unidadeJudicialRepository.count();
         return "Teste";
     }
 }
