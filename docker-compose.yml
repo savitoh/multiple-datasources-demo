@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  multiple-datasources-demo:
+    container_name: multiple-datasources-demo
+    image: multiple-datasources-demo
+    build: ./
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres-db
+      - maria-db
+    environment:
+      - FOO_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/pg-databse
+      - FOO_DATASOURCE_USERNAME=root
+      - FOO_DATASOURCE_PASSWORD=root
+      - BAR_DATASOURCE_URL=jdbc:jdbc:mysql://maria-db:3306/maria-database?createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC&useSSL=false
+      - BAR_DATASOURCE_USERNAME=root
+      - BAR_DATASOURCE_PASSWORD=root
+      - JAVA_OPTS=-Dspring.profiles.active=dev
+  postgres-db:
+    image: 'postgres:11-alpine'
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=pg-databse
+  maria-db:
+    image: 'mariadb:10.5'
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=maria-database
